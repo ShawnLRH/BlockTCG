@@ -3,15 +3,13 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /// @title CardCollection
-/// @notice ERC1155 collectible cards with 3 rarity tiers and blind-box pack opening
+/// @notice ERC1155 collectible cards storing metadata, rarity, and supply.
+///         Blind-box logic and randomness are handled by an external DropManager.
 contract CardCollection is ERC1155, Ownable {
-
-    IERC20 public immutable paymentToken;
-
-    uint256 public constant PACK_PRICE = 10 * 10 ** 18; // 10 CARD tokens per pack
+    using Strings for uint256;
 
     /// @notice Rarity tiers for cards
     enum Rarity { Common, Rare, SuperRare }
@@ -24,35 +22,51 @@ contract CardCollection is ERC1155, Ownable {
         uint256 currentSupply;
     }
 
-    mapping(uint256 => CardInfo) public cards;  // tokenId => CardInfo
+    mapping(uint256 => CardInfo) public cards; // tokenId => CardInfo
     uint256 public totalCardTypes;
 
-    // Rarity buckets used for weighted random selection
+    // Optional rarity buckets for UI / analytics / future use
     uint256[] public commonIds;
     uint256[] public rareIds;
     uint256[] public superRareIds;
 
-    // Nonce for pseudo-randomness (sufficient for demo; use Chainlink VRF in production)
-    uint256 private _nonce;
+    /// @notice Authorized DropManager contract that can mint cards
+    address public dropManager;
 
-    // ─── Events ───────────────────────────────────────────────────────
-    event PackOpened(address indexed user, uint256 tokenId, string cardName, Rarity rarity);
+    /// @notice Base URI for metadata (e.g. "ipfs://YOUR_CID/")
+    string private _baseURI;
+
     event CardRegistered(uint256 tokenId, string name, Rarity rarity, uint256 maxSupply);
+    event DropManagerUpdated(address indexed newDropManager);
+    event CardMinted(address indexed to, uint256 indexed tokenId, uint256 amount);
 
-    /// @param _paymentToken Address of the deployed CollectibleToken (ERC20)
-    /// @param _uri Metadata URI e.g. "ipfs://YOUR_CID/{id}.json"
-    constructor(address _paymentToken, string memory _uri)
-        ERC1155(_uri)
-        Ownable(msg.sender)
-    {
-        paymentToken = IERC20(_paymentToken);
+    modifier onlyDropManager() {
+        require(msg.sender == dropManager, "Not authorized drop manager");
+        _;
     }
 
-    /// @notice Register a new card type. Owner only. Call once per card during setup.
-    /// @param tokenId Unique ID for this card (1-20 Common, 21-35 Rare, 36-45 SuperRare)
-    /// @param name Display name of the card
-    /// @param rarity 0=Common, 1=Rare, 2=SuperRare
-    /// @param maxSupply Maximum copies that can ever be minted
+    /// @param _uri Base metadata URI, e.g. "ipfs://YOUR_CID/"
+    constructor(string memory _uri)
+        ERC1155("")
+        Ownable(msg.sender)
+    {
+        _baseURI = _uri;
+    }
+
+    /// @notice Returns metadata URI for a token, e.g. "ipfs://CID/1.json"
+    function uri(uint256 tokenId) public view override returns (string memory) {
+        require(cards[tokenId].maxSupply > 0, "Card not registered");
+        return string.concat(_baseURI, tokenId.toString(), ".json");
+    }
+
+    /// @notice Set the authorized drop manager
+    function setDropManager(address _dropManager) external onlyOwner {
+        require(_dropManager != address(0), "Invalid drop manager");
+        dropManager = _dropManager;
+        emit DropManagerUpdated(_dropManager);
+    }
+
+    /// @notice Register a new card type. Owner only.
     function registerCard(
         uint256 tokenId,
         string calldata name,
@@ -65,49 +79,38 @@ contract CardCollection is ERC1155, Ownable {
         cards[tokenId] = CardInfo(name, rarity, maxSupply, 0);
         totalCardTypes++;
 
-        // Add tokenId to the correct rarity bucket
-        if (rarity == Rarity.Common)        commonIds.push(tokenId);
-        else if (rarity == Rarity.Rare)     rareIds.push(tokenId);
-        else                                superRareIds.push(tokenId);
+        if (rarity == Rarity.Common) commonIds.push(tokenId);
+        else if (rarity == Rarity.Rare) rareIds.push(tokenId);
+        else superRareIds.push(tokenId);
 
         emit CardRegistered(tokenId, name, rarity, maxSupply);
     }
 
-    /// @notice Open a pack: spend CARD tokens, receive 1 random card
-    /// @dev Weighted odds: 70% Common, 25% Rare, 5% Super Rare
-    function openPack() external {
-        // Step 1: Collect payment
-        require(
-            paymentToken.transferFrom(msg.sender, address(this), PACK_PRICE),
-            "Payment failed: approve CARD tokens first"
-        );
+    /// @notice Mint a registered card to a user. Only callable by DropManager.
+    function mintCard(address to, uint256 tokenId, uint256 amount) external onlyDropManager {
+        require(to != address(0), "Invalid recipient");
+        require(amount > 0, "Amount must be > 0");
 
-        // Step 2: Pick rarity tier
-        uint256 rand = _random(100);
-        uint256 tokenId;
-
-        if (rand < 70) {
-            tokenId = _pickFromBucket(commonIds);       // 70% Common
-        } else if (rand < 95) {
-            tokenId = _pickFromBucket(rareIds);         // 25% Rare
-        } else {
-            tokenId = _pickFromBucket(superRareIds);    // 5% Super Rare
-        }
-
-        // Step 3: Enforce max supply and mint
         CardInfo storage card = cards[tokenId];
-        require(card.currentSupply < card.maxSupply, "Card sold out, retry");
-        card.currentSupply++;
-        _mint(msg.sender, tokenId, 1, "");
+        require(card.maxSupply > 0, "Card not registered");
+        require(card.currentSupply + amount <= card.maxSupply, "Exceeds max supply");
 
-        emit PackOpened(msg.sender, tokenId, card.name, card.rarity);
+        card.currentSupply += amount;
+        _mint(to, tokenId, amount, "");
+
+        emit CardMinted(to, tokenId, amount);
     }
 
-    /// @notice Owner withdraws CARD tokens collected from pack sales
-    function withdrawTokens(address to) external onlyOwner {
-        uint256 balance = paymentToken.balanceOf(address(this));
-        require(balance > 0, "Nothing to withdraw");
-        paymentToken.transfer(to, balance);
+    /// @notice Returns whether a card exists
+    function exists(uint256 tokenId) external view returns (bool) {
+        return cards[tokenId].maxSupply > 0;
+    }
+
+    /// @notice Returns remaining mintable supply for a card
+    function remainingSupply(uint256 tokenId) external view returns (uint256) {
+        CardInfo storage card = cards[tokenId];
+        if (card.maxSupply == 0) return 0;
+        return card.maxSupply - card.currentSupply;
     }
 
     /// @notice Returns full card info for a given tokenId
@@ -115,35 +118,46 @@ contract CardCollection is ERC1155, Ownable {
         return cards[tokenId];
     }
 
-    /// @notice Returns all tokenIds in a rarity bucket
+    function batchRegisterCards(
+        uint256[] calldata tokenIds,
+        string[] calldata names,
+        Rarity[] calldata rarities,
+        uint256[] calldata maxSupplies
+    ) external onlyOwner {
+        require(
+            tokenIds.length == names.length &&
+            names.length == rarities.length &&
+            rarities.length == maxSupplies.length,
+            "Array length mismatch"
+        );
+        require(tokenIds.length > 0, "No cards provided");
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            string calldata name = names[i];
+            Rarity rarity = rarities[i];
+            uint256 maxSupply = maxSupplies[i];
+
+            require(cards[tokenId].maxSupply == 0, "Card already registered");
+            require(maxSupply > 0, "Max supply must be > 0");
+
+            cards[tokenId] = CardInfo(name, rarity, maxSupply, 0);
+            totalCardTypes++;
+
+            if (rarity == Rarity.Common) {
+                commonIds.push(tokenId);
+            } else if (rarity == Rarity.Rare) {
+                rareIds.push(tokenId);
+            } else {
+                superRareIds.push(tokenId);
+            }
+
+            emit CardRegistered(tokenId, name, rarity, maxSupply);
+        }
+    }
+
+    /// @notice Returns all tokenIds in each rarity bucket
     function getCommonIds() external view returns (uint256[] memory) { return commonIds; }
     function getRareIds() external view returns (uint256[] memory) { return rareIds; }
     function getSuperRareIds() external view returns (uint256[] memory) { return superRareIds; }
-
-    // ─── Internal helpers ─────────────────────────────────────────────
-
-    /// @dev Picks a random available tokenId from a rarity bucket, skips sold-out cards
-    function _pickFromBucket(uint256[] storage bucket) internal returns (uint256) {
-        require(bucket.length > 0, "No cards in this rarity tier");
-        uint256 startIdx = _random(bucket.length);
-        for (uint256 i = 0; i < bucket.length; i++) {
-            uint256 idx = (startIdx + i) % bucket.length;
-            uint256 id = bucket[idx];
-            if (cards[id].currentSupply < cards[id].maxSupply) {
-                return id;
-            }
-        }
-        revert("All cards in this rarity tier are sold out");
-    }
-
-    /// @dev Pseudo-random using block data + nonce. Not secure against miners — use Chainlink VRF in production.
-    function _random(uint256 modulus) internal returns (uint256) {
-        _nonce++;
-        return uint256(keccak256(abi.encodePacked(
-            block.timestamp,
-            block.prevrandao,
-            msg.sender,
-            _nonce
-        ))) % modulus;
-    }
 }
