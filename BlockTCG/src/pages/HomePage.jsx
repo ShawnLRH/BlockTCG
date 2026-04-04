@@ -14,19 +14,33 @@ function HomePage() {
             card is on-chain authentic, scarce, and truly yours.
           </p>
           <div className="hero-cta">
-            <button type="button" className="ghost-btn">
+            <Link to="/open-pack" className="ghost-btn">
               Open a Pack
-            </button>
+            </Link>
             <Link to="/marketplace" className="ghost-btn hero-link-btn">
               Browse Marketplace
             </Link>
           </div>
         </section>
 
+        {/* featured cards using the same placeholder style as the marketplace */}
         <section className="cards-row" aria-label="Featured cards">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <article className="card-tile" key={i}>
-              <p>Pokemon</p>
+          {[
+            { id: 'DRGN-001', name: 'Card 1', rarity: 'Legendary' },
+            { id: 'KNGT-014', name: 'Card 2', rarity: 'Epic'      },
+            { id: 'ARCN-027', name: 'Card 3', rarity: 'Rare'      },
+            { id: 'BSTN-041', name: 'Card 4', rarity: 'Uncommon'  },
+            { id: 'AETH-066', name: 'Card 5', rarity: 'Rare'      },
+          ].map((card) => (
+            <article className="card-tile" key={card.id}>
+              <div className="card-tile-thumb">{card.name}</div>
+              <div className="card-tile-info">
+                <p className={`rarity-badge rarity-badge--${card.rarity.toLowerCase()}`}>
+                  {card.rarity}
+                </p>
+                <p className="card-tile-name">{card.name}</p>
+                <p className="card-tile-id">{card.id}</p>
+              </div>
             </article>
           ))}
         </section>

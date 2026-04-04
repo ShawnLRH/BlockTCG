@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+
+// placeholder listings — will be replaced with real on-chain data later
 const listings = [
   {
     id: 'LIST-001',
@@ -52,6 +55,7 @@ const listings = [
 function MarketplacePage() {
   return (
     <main className="market-main">
+      {/* heading row — title + description on the left, action button on the right */}
       <section className="market-heading" aria-label="Marketplace overview">
         <div>
           <h1>Available Listings</h1>
@@ -60,28 +64,25 @@ function MarketplacePage() {
             now and will be replaced with real card thumbnails from metadata.
           </p>
         </div>
-        <button type="button" className="primary-btn">
+        {/* takes you to your collection so you can pick a card to list */}
+        <Link to="/collection" className="primary-btn">
           List My Card
-        </button>
+        </Link>
       </section>
 
+      {/* loops through the listings array and renders a card for each one */}
       <section className="listing-grid" aria-label="Card listings">
         {listings.map((listing) => (
           <article className="listing-card" key={listing.id}>
+            {/* diagonal stripe placeholder until real card art is ready */}
             <div className="listing-thumb" role="img" aria-label="Card thumbnail placeholder">
               {listing.cardName}
             </div>
             <div className="listing-content">
               <h2>{listing.cardName}</h2>
-              <p>
-                Card ID: {listing.cardId}
-              </p>
-              <p>
-                Rarity: {listing.rarity}
-              </p>
-              <p>
-                Seller: {listing.seller}
-              </p>
+              <p>Card ID: {listing.cardId}</p>
+              <p>Rarity: {listing.rarity}</p>
+              <p>Seller: {listing.seller}</p>
               <p className="listing-price">Price: {listing.price}</p>
             </div>
           </article>

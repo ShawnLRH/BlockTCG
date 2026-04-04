@@ -1,3 +1,4 @@
+/* the whole page lives in here — dark bg with a soft purple glow bleeding in from the top */
 .page-shell {
   min-height: 100vh;
   display: flex;
@@ -8,6 +9,7 @@
   color: #ebecf4;
 }
 
+/* sticky nav bar — slight blur so it feels "above" the content when you scroll */
 .top-nav {
   height: 72px;
   display: flex;
@@ -19,6 +21,7 @@
   backdrop-filter: blur(7px);
 }
 
+/* the BlockTCG logo text top left */
 .brand {
   color: #cdc6ff;
   font-size: 2rem;
@@ -27,6 +30,7 @@
   letter-spacing: -0.02em;
 }
 
+/* the three nav links in the middle */
 .nav-links {
   display: flex;
   gap: 3.8rem;
@@ -38,10 +42,12 @@
   font-size: 1.2rem;
 }
 
+/* whichever page you're on gets this brighter purple */
 .nav-links a.active {
   color: #cec7ff;
 }
 
+/* connect wallet button — no fill, just a border */
 .wallet-btn {
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 12px;
@@ -53,10 +59,14 @@
   cursor: pointer;
 }
 
+/* lets main stretch to fill whatever height is left after the nav */
 main {
   flex: 1;
 }
 
+/* ── Home page ── */
+
+/* the big centred hero block */
 .hero-section {
   display: flex;
   flex-direction: column;
@@ -66,6 +76,7 @@ main {
   width: min(760px, 92vw);
 }
 
+/* the small "Powered by Ethereum" pill above the heading */
 .chain-pill {
   font-size: 1.1rem;
   background: linear-gradient(90deg, #2f2a67, #373183);
@@ -75,6 +86,7 @@ main {
   margin: 0 0 1.6rem;
 }
 
+/* main hero heading — clamp so it scales nicely on any screen size */
 .hero-section h1 {
   margin: 0;
   font-size: clamp(3rem, 5.4vw, 5rem);
@@ -83,10 +95,12 @@ main {
   color: #f5f6fd;
 }
 
+/* the "Own." word gets the purple accent */
 .hero-section h1 span {
   color: #bdb3ff;
 }
 
+/* the subtext below the heading */
 .hero-copy {
   margin: 1.4rem 0 2rem;
   max-width: 685px;
@@ -95,11 +109,13 @@ main {
   line-height: 1.45;
 }
 
+/* row of CTA buttons */
 .hero-cta {
   display: flex;
   gap: 1rem;
 }
 
+/* reusable ghost button — used all over the app */
 .ghost-btn {
   border: 1px solid rgba(255, 255, 255, 0.47);
   background: rgba(14, 19, 32, 0.36);
@@ -109,8 +125,10 @@ main {
   font-size: 1.08rem;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
 }
 
+/* when ghost-btn is used as a Link component it needs these to look right */
 .hero-link-btn {
   display: inline-flex;
   align-items: center;
@@ -118,6 +136,7 @@ main {
   text-decoration: none;
 }
 
+/* the 5 placeholder card tiles on the home page */
 .cards-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(110px, 1fr));
@@ -126,23 +145,57 @@ main {
   margin: 0 auto 78px;
 }
 
+/* home page featured cards — portrait layout matching the marketplace style */
 .card-tile {
-  background: #d8d8db;
-  border-radius: 10px;
-  min-height: clamp(154px, 16vw, 255px);
-  display: flex;
-  align-items: flex-end;
-  padding: 0.8rem;
+  background: rgba(11, 15, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
 }
 
-.card-tile p {
-  margin: 0;
-  color: #15161d;
-  font-size: 1rem;
+/* diagonal stripe placeholder — same as marketplace and collection */
+.card-tile-thumb {
+  height: clamp(120px, 14vw, 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(189, 179, 255, 0.16),
+    rgba(189, 179, 255, 0.16) 10px,
+    rgba(120, 108, 214, 0.16) 10px,
+    rgba(120, 108, 214, 0.16) 20px
+  );
+  color: #d8d2ff;
   font-weight: 700;
+  font-size: 0.95rem;
 }
 
+/* card name, rarity badge, ID below the thumbnail */
+.card-tile-info {
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.card-tile-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f5f6fd;
+}
+
+.card-tile-id {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #8f95aa;
+}
+
+/* the stats bar at the very bottom of the home page */
 .stats-strip {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   background: #090d19;
@@ -169,12 +222,16 @@ main {
   font-size: clamp(1rem, 1.2vw, 1.3rem);
 }
 
+/* ── Marketplace page ── */
+
+/* same max-width container pattern used across all inner pages */
 .market-main {
   flex: 1;
   width: min(1120px, 92vw);
   margin: 2.4rem auto 2.8rem;
 }
 
+/* heading row with title on the left, "List My Card" button on the right */
 .market-heading {
   display: flex;
   justify-content: space-between;
@@ -195,6 +252,7 @@ main {
   max-width: 720px;
 }
 
+/* the solid purple button — used for primary actions like "List My Card" */
 .primary-btn {
   border: 1px solid #7f6fff;
   background: linear-gradient(90deg, #6f5dff, #8d7fff);
@@ -204,14 +262,19 @@ main {
   font-weight: 700;
   padding: 0.8rem 1.25rem;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
+/* 3-column grid of listing cards */
 .listing-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(220px, 1fr));
   gap: 1rem;
 }
 
+/* individual listing card */
 .listing-card {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
@@ -220,6 +283,7 @@ main {
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.24);
 }
 
+/* placeholder art area — diagonal stripe pattern until real images are swapped in */
 .listing-thumb {
   height: 180px;
   display: flex;
@@ -255,10 +319,366 @@ main {
   font-size: 0.92rem;
 }
 
+/* price line gets the purple so it pops */
 .listing-price {
   color: #cfc7ff;
   font-weight: 700;
 }
+
+/* ── Pack Opening page ── */
+
+.pack-main {
+  flex: 1;
+  width: min(1120px, 92vw);
+  margin: 2.4rem auto 2.8rem;
+}
+
+/* centred heading section, same vibe as the hero on the home page */
+.pack-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 2rem auto 3rem;
+  width: min(760px, 92vw);
+}
+
+.pack-heading h1 {
+  margin: 0;
+  font-size: clamp(3rem, 5.4vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: #f5f6fd;
+}
+
+/* "Pack" word gets the same purple accent as "Own." on the home page */
+.pack-heading h1 span {
+  color: #bdb3ff;
+}
+
+.pack-copy {
+  margin: 1.4rem 0 0;
+  max-width: 685px;
+  color: #9195a9;
+  font-size: clamp(1rem, 1.5vw, 1.35rem);
+  line-height: 1.45;
+}
+
+/* centres the pack box and open button vertically */
+.pack-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  margin: 2rem 0 3rem;
+}
+
+/* the unopened pack card — portrait ratio with a purple inner glow */
+.pack-box {
+  border: 1px solid rgba(189, 179, 255, 0.3);
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 30%, rgba(128, 104, 255, 0.25), rgba(11, 15, 26, 0.85));
+  width: min(280px, 80vw);
+  aspect-ratio: 2 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
+}
+
+.pack-label {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #cdc6ff;
+  letter-spacing: -0.01em;
+}
+
+.pack-sub {
+  margin: 0;
+  color: #8f95aa;
+  font-size: 1rem;
+}
+
+/* slightly bigger ghost button just for the open pack action */
+.pack-open-btn {
+  font-size: 1.15rem;
+  padding: 0.9rem 2.2rem;
+}
+
+/* the "Opening your pack..." text that shows for ~1.2 seconds */
+.pack-opening-anim {
+  margin: 4rem 0;
+  text-align: center;
+  color: #9195a9;
+  font-size: 1.2rem;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* fades in and out to give the loading state some life */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* 5 revealed cards side by side */
+.pack-reveal-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  gap: clamp(0.9rem, 2vw, 1.6rem);
+  margin-bottom: 2.4rem;
+}
+
+/* each card before/after flipping */
+.pack-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 2 / 3;
+  background: rgba(11, 15, 26, 0.85);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.24);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* little lift on hover so it feels clickable */
+.pack-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.36);
+}
+
+/* face-down state — same diagonal stripe as the marketplace thumbnails */
+.pack-card-back {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(189, 179, 255, 0.16),
+    rgba(189, 179, 255, 0.16) 10px,
+    rgba(120, 108, 214, 0.16) 10px,
+    rgba(120, 108, 214, 0.16) 20px
+  );
+  color: #d8d2ff;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* face-up state after the user clicks */
+.pack-card-front {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.pack-card-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f5f6fd;
+}
+
+.pack-card-id {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #8f95aa;
+}
+
+/* "Open Another Pack" and "View My Collection" buttons after reveal */
+.pack-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+/* ── Collection page ── */
+
+.collection-main {
+  flex: 1;
+  width: min(1120px, 92vw);
+  margin: 2.4rem auto 2.8rem;
+}
+
+/* same heading layout as the marketplace — title left, button right */
+.collection-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.6rem;
+}
+
+.collection-heading h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  letter-spacing: -0.03em;
+}
+
+.collection-heading p {
+  margin: 0.6rem 0 0;
+  color: #9ea4bd;
+  max-width: 720px;
+}
+
+/* stat strip — same idea as the home page one but inside a card instead of full-width */
+.collection-stats {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: #090d19;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  padding: 2rem min(3.2rem, 5vw);
+  margin-bottom: 2rem;
+}
+
+.collection-stats article {
+  text-align: center;
+}
+
+.collection-stats h2 {
+  margin: 0;
+  color: #bfb8f9;
+  font-size: clamp(2rem, 3.2vw, 3.25rem);
+  letter-spacing: -0.02em;
+}
+
+.collection-stats p {
+  margin: 0.4rem 0 0;
+  color: #8f95aa;
+  font-size: clamp(1rem, 1.2vw, 1.3rem);
+}
+
+/* same 3-column grid as the marketplace */
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.collection-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(11, 15, 26, 0.85);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.24);
+  display: flex;
+  flex-direction: column;
+}
+
+/* same diagonal stripe placeholder as the marketplace thumbnails */
+.collection-thumb {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(189, 179, 255, 0.16),
+    rgba(189, 179, 255, 0.16) 10px,
+    rgba(120, 108, 214, 0.16) 10px,
+    rgba(120, 108, 214, 0.16) 20px
+  );
+  color: #d8d2ff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+}
+
+.collection-card-content {
+  padding: 0.95rem;
+  flex: 1; /* pushes the button to the bottom */
+}
+
+.collection-card-content h2 {
+  margin: 0.4rem 0 0;
+  font-size: 1.1rem;
+  color: #f5f6fd;
+}
+
+.collection-card-content p {
+  margin: 0.45rem 0 0;
+  color: #abb0c6;
+  font-size: 0.92rem;
+}
+
+/* how many copies you own — purple so it stands out */
+.collection-copies {
+  color: #cfc7ff;
+  font-weight: 700;
+}
+
+.collection-card-actions {
+  padding: 0 0.95rem 0.95rem;
+}
+
+/* makes the "List for Sale" link button fill the card width */
+.collection-action-btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Rarity badges ── */
+/* these show up on pack reveal and collection cards */
+
+.rarity-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* gold for legendary — feels appropriately fancy */
+.rarity-badge--legendary {
+  background: rgba(255, 185, 0, 0.15);
+  color: #ffd966;
+  border: 1px solid rgba(255, 185, 0, 0.35);
+}
+
+/* purple for epic */
+.rarity-badge--epic {
+  background: rgba(168, 100, 255, 0.15);
+  color: #c98fff;
+  border: 1px solid rgba(168, 100, 255, 0.35);
+}
+
+/* blue for rare */
+.rarity-badge--rare {
+  background: rgba(80, 160, 255, 0.15);
+  color: #85c0ff;
+  border: 1px solid rgba(80, 160, 255, 0.35);
+}
+
+/* green for uncommon */
+.rarity-badge--uncommon {
+  background: rgba(80, 220, 160, 0.15);
+  color: #6ddbb0;
+  border: 1px solid rgba(80, 220, 160, 0.35);
+}
+
+/* grey for common — nothing special, that's the point */
+.rarity-badge--common {
+  background: rgba(180, 180, 200, 0.15);
+  color: #b0b3c6;
+  border: 1px solid rgba(180, 180, 200, 0.35);
+}
+
+/* ── Responsive breakpoints ── */
 
 @media (max-width: 980px) {
   .top-nav {
@@ -269,6 +689,7 @@ main {
     font-size: 1.5rem;
   }
 
+  /* hide nav links on smaller screens — would need a hamburger menu later */
   .nav-links {
     display: none;
   }
@@ -282,11 +703,13 @@ main {
     margin-top: 58px;
   }
 
+  /* stack CTA buttons on mobile */
   .hero-cta {
     flex-direction: column;
     width: min(360px, 100%);
   }
 
+  /* 2 columns on tablet instead of 5 */
   .cards-row {
     grid-template-columns: repeat(2, minmax(124px, 1fr));
   }
@@ -295,6 +718,7 @@ main {
     margin-top: 1.4rem;
   }
 
+  /* stack heading and button on mobile */
   .market-heading {
     flex-direction: column;
   }
@@ -307,10 +731,43 @@ main {
     grid-template-columns: repeat(2, 1fr);
     padding: 1.7rem 1rem;
   }
+
+  /* 3 cards per row on tablet for the pack reveal */
+  .pack-reveal-grid {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+  }
+
+  .collection-heading {
+    flex-direction: column;
+  }
+
+  .collection-stats {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1.7rem 1rem;
+  }
+
+  .collection-grid {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
 }
 
 @media (max-width: 620px) {
   .listing-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* 2 cards per row on small phones */
+  .pack-reveal-grid {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .collection-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* stack the post-reveal buttons on mobile */
+  .pack-actions {
+    flex-direction: column;
+    align-items: center;
   }
 }
