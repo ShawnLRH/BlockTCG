@@ -1,6 +1,6 @@
-##How to test the contracts
+## How to test the contracts
 
-#Step 1: ChainLink VRF Sibscription set up
+# Step 1: ChainLink VRF Sibscription set up
 Claim Sepolia ETH: https://cloud.google.com/application/web3/faucet/ethereum/sepolia
 Claim LINK Token: https://faucets.chain.link/sepolia
 
@@ -10,19 +10,19 @@ Set-up Subscription: vrf.chain.link
 3. Click "Create Subscription" to create a subscription
 4. Fund it with minimum 125 LINK tokens, each request only takes around 0.0018 LINK but 170 LINK is listed as max so more than max is needed. You can reduce this if you do not have enough Testnet LINK. Will be covered below in the next steps.
 
-#Step 2: Deploy the Collectible token
+# Step 2: Deploy the Collectible token
 1. Compile on remix
 2. Change to wallet connect mode on sepolia
 3. Set initial supply as 1000000 and deploy
 
-#Step 3: Upload IPFS Images and JSON
+# Step 3: Upload IPFS Images and JSON
 1. Create a account on https://pinata.cloud/ipfs
 2. Upload the images in the folder called Cards to IPFS
-3. Update the CID in the provided JSON files in blocktcg_metadata_json
+3. Update the CID in the provided JSON files in blocktcg_metadata_json with the Cards file CID
 4. Upload the entire folder after updating the JSON files
 5. Get the IPFS://[CID] of your json metadata file
 
-#Step 4: Deploy and set-up CardCollection
+# Step 4: Deploy and set-up CardCollection
 1. Compile on remix
 2. Set input as IPFS://[CID] of your json metadata file
 3. Go to contracts and call the BatchRegisterCards Function with
@@ -45,7 +45,7 @@ names:
 rarities: [0,0,0,0,0,0,0,1,1,1,1,2]
 maxSupplies: [20,20,20,20,20,20,20,8,8,8,8,2]
 
-#Step 5: Deploy and Set-Up Dropmanager With VRF
+# Step 5: Deploy and Set-Up Dropmanager With VRF
 1. Compile on remix
 2. Set the input as follows
 collectionAddress = [deployed CardCollection address]
@@ -62,31 +62,31 @@ initialPackPrice = 10000000000000000000 (10 CARD tokens)
 
 If you followed the changes stated, the max cost would be reduced by half to 80, so 81 Chainlink deposit is enough. Only 0.0018 will be used per transaction.
 
-#Step 6: Authorize the drop manager
+# Step 6: Authorize the drop manager
 1. Call setDropManager in CardCollection deployed contract
 2. Provide the DropManager contract address
 
-#Step 7: Add drop contract as consumer
+# Step 7: Add drop contract as consumer
 1. Go to vrf.chain.link
 2. open your subscriptions
 3. Paste in your deployed Drop manager contract address
 4. Confirm and wait for it to be processed
 
-#Step 8: Pool Seeding
+# Step 8: Pool Seeding
 1. In the drop manager contract call the BatchSeedPool Function
 2. Fill the input with
 cardIDs: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 copies: [20, 20, 20, 20, 20, 20, 20, 8, 8, 8, 8, 2]
 
-#Step 9: Token Minting (Optional: only if needed)
+# Step 9: Token Minting (Optional: only if needed)
 1. If not using the wallet that deployed token contract, mint tokens
 2. If using the wallet that deployed token contract no minting needed, token already in your wallet
 
-#Step 10: Approval of CARD spending
+# Step 10: Approval of CARD spending
 1. Call the approve function in the collectible token contract
 2. Provide dropmanager address and the value 50000000000000000000 to approve 50 CARD spending (You can decide how much you wish to spend)
 
-#Step 11: Buy Packs
+# Step 11: Buy Packs
 1. Call the buyPack function in the DropManager contract
 2. put 1 and execute
 3. Check vrf.chain.link to see if your fulfillment is done (usually takes around 30 seconds)
@@ -96,4 +96,4 @@ accounts: [Paste your wallet here 12 times seperated by commas]
 ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 6. If it shows 5 cards, you have successfully minted
 
-#Step 12: Marketplace
+# Step 12: Marketplace

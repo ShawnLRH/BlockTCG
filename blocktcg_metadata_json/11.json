@@ -1,0 +1,9 @@
+{
+  "name": "Network Control",
+  "description": "Rare collectible card from the BlockTCG blind-box set.",
+  "image": "ipfs://[your_CID]/rare_networkcontrol.png",
+  "attributes": [
+    { "trait_type": "Rarity", "value": "Rare" },
+    { "trait_type": "Card ID", "value": 11 }
+  ]
+}
