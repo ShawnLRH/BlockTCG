@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /// @title CardCollection
-/// @notice ERC1155 collectible cards storing metadata, rarity, and supply.
-///         Blind-box logic and randomness are handled by an external DropManager.
+/// @notice this is the main card NFT contract - stores all card info on-chain
+///         and lets the DropManager handle the pack opening / randomness stuff
 contract CardCollection is ERC1155, Ownable {
     using Strings for uint256;
 
@@ -53,20 +53,21 @@ contract CardCollection is ERC1155, Ownable {
         _baseURI = _uri;
     }
 
-    /// @notice Returns metadata URI for a token, e.g. "ipfs://CID/1.json"
+    /// @notice builds the metadata URL for a card, like "ipfs://CID/1.json"
+    /// @return the full URI string pointing to that card's JSON file
     function uri(uint256 tokenId) public view override returns (string memory) {
         require(cards[tokenId].maxSupply > 0, "Card not registered");
         return string.concat(_baseURI, tokenId.toString(), ".json");
     }
 
-    /// @notice Set the authorized drop manager
+    /// @notice lets the owner set which DropManager contract is allowed to mint
     function setDropManager(address _dropManager) external onlyOwner {
         require(_dropManager != address(0), "Invalid drop manager");
         dropManager = _dropManager;
         emit DropManagerUpdated(_dropManager);
     }
 
-    /// @notice Register a new card type. Owner only.
+    /// @notice adds a new card type to the collection - owner calls this during setup
     function registerCard(
         uint256 tokenId,
         string calldata name,
@@ -86,7 +87,7 @@ contract CardCollection is ERC1155, Ownable {
         emit CardRegistered(tokenId, name, rarity, maxSupply);
     }
 
-    /// @notice Mint a registered card to a user. Only callable by DropManager.
+    /// @notice mints a card to someone - only the DropManager can call this
     function mintCard(address to, uint256 tokenId, uint256 amount) external onlyDropManager {
         require(to != address(0), "Invalid recipient");
         require(amount > 0, "Amount must be > 0");
@@ -101,23 +102,27 @@ contract CardCollection is ERC1155, Ownable {
         emit CardMinted(to, tokenId, amount);
     }
 
-    /// @notice Returns whether a card exists
+    /// @notice quick check to see if a card has been registered yet
+    /// @return true if the card exists, false otherwise
     function exists(uint256 tokenId) external view returns (bool) {
         return cards[tokenId].maxSupply > 0;
     }
 
-    /// @notice Returns remaining mintable supply for a card
+    /// @notice tells you how many copies of a card can still be minted
+    /// @return number of copies left before it's sold out
     function remainingSupply(uint256 tokenId) external view returns (uint256) {
         CardInfo storage card = cards[tokenId];
         if (card.maxSupply == 0) return 0;
         return card.maxSupply - card.currentSupply;
     }
 
-    /// @notice Returns full card info for a given tokenId
+    /// @notice grabs all the info about a card (name, rarity, supply, etc.)
+    /// @return the CardInfo struct for that token
     function getCardInfo(uint256 tokenId) external view returns (CardInfo memory) {
         return cards[tokenId];
     }
 
+    /// @notice same as registerCard but you can add a bunch at once to save time
     function batchRegisterCards(
         uint256[] calldata tokenIds,
         string[] calldata names,
@@ -156,7 +161,7 @@ contract CardCollection is ERC1155, Ownable {
         }
     }
 
-    /// @notice Returns all tokenIds in each rarity bucket
+    /// @notice returns all token IDs grouped by rarity - handy for the frontend
     function getCommonIds() external view returns (uint256[] memory) { return commonIds; }
     function getRareIds() external view returns (uint256[] memory) { return rareIds; }
     function getSuperRareIds() external view returns (uint256[] memory) { return superRareIds; }

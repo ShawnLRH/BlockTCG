@@ -23,6 +23,8 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         bool fulfilled;
     }
 
+    uint32 public constant CARDS_PER_PACK = 5;
+
     ICollection1155VRF public immutable collection;
     IERC20 public immutable paymentToken;
 
@@ -111,6 +113,7 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         packPrice = initialPackPrice;
     }
 
+    /// @notice adds copies of a single card into the pool so they can show up in packs
     function seedPool(uint256 cardId, uint256 copies) external onlyOwner {
         if (!collection.exists(cardId)) revert CardDoesNotExist(cardId);
         if (copies == 0) revert InvalidAmount();
@@ -125,6 +128,7 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         emit PoolSeeded(cardId, copies);
     }
 
+    /// @notice same as seedPool but for multiple cards at once
     function seedPoolBatch(
         uint256[] calldata cardIds,
         uint256[] calldata copies
@@ -151,23 +155,27 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         }
     }
 
+    /// @notice updates how much a pack cost
     function setPackPrice(uint256 newPrice) external onlyOwner {
         if (newPrice == 0) revert InvalidAmount();
         packPrice = newPrice;
         emit PackPriceUpdated(newPrice);
     }
 
+    /// @notice changes where the payment tokens get sent when withdrawn
     function setTreasury(address newTreasury) external onlyOwner {
         if (newTreasury == address(0)) revert InvalidAddress();
         treasury = newTreasury;
         emit TreasuryUpdated(newTreasury);
     }
 
+    /// @notice updates the chainlink VRF subscription ID
     function setSubscriptionId(uint256 newSubscriptionId) external onlyOwner {
         subscriptionId = newSubscriptionId;
         emit SubscriptionIdUpdated(newSubscriptionId);
     }
 
+    /// @notice allows user to change VRF configs
     function setVRFConfig(
         bytes32 newKeyHash,
         uint32 newCallbackGasLimit,
@@ -187,14 +195,17 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         );
     }
 
+    /// @notice stops all pack purchases
     function pause() external onlyOwner {
         _pause();
     }
 
+    /// @notice re-enables pack purchases after pausing
     function unpause() external onlyOwner {
         _unpause();
     }
 
+    /// @notice sends collected payment tokens to the treasury wallet
     function withdrawPayments(uint256 amount) external onlyOwner {
         if (amount == 0) revert InvalidAmount();
         bool ok = paymentToken.transfer(treasury, amount);
@@ -202,7 +213,8 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         emit PaymentsWithdrawn(treasury, amount);
     }
 
-
+    /// @notice User pays tokens and function asks chainlink for random numbers
+    /// @return requestId the VRF request ID so it can be tracked later
     function buyPack(uint32 quantity)
         external
         whenNotPaused
@@ -217,6 +229,8 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         bool ok = paymentToken.transferFrom(msg.sender, address(this), totalCost);
         if (!ok) revert ERC20TransferFailed();
 
+        uint32 totalCards = quantity * CARDS_PER_PACK;
+
         pendingReservedPacks += quantity;
         totalPacksSold += quantity;
 
@@ -226,7 +240,7 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
                 subId: subscriptionId,
                 requestConfirmations: requestConfirmations,
                 callbackGasLimit: callbackGasLimit,
-                numWords: quantity,
+                numWords: totalCards,
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment})
                 )
@@ -246,6 +260,7 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         emit PackPurchaseRequested(requestId, msg.sender, quantity, totalCost);
     }
 
+    /// @notice chainlink calls this once the random numbers are ready, it then picks cards and mints them
     function fulfillRandomWords(
         uint256 requestId,
         uint256[] calldata randomWords
@@ -273,27 +288,35 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
             _requestCardIds[requestId].push(cardId);
 
             collection.mintCard(req.buyer, cardId, 1);
-
-            totalPacksOpened += 1;
-            pendingReservedPacks -= 1;
         }
+
+        uint32 packsInRequest = req.quantity;
+        totalPacksOpened += packsInRequest;
+        pendingReservedPacks -= packsInRequest;
 
         emit PackFulfilled(requestId, req.buyer);
     }
 
-
+    /// @notice how many card slots are left in the pool total
+    /// @return the size of the remaining pool
     function remainingPoolSize() external view returns (uint256) {
         return remainingPool.length;
     }
 
+    /// @notice how many packs can still be bought
+    /// @return number of packs available right now
     function availablePackCount() public view returns (uint256) {
-        return remainingPool.length - pendingReservedPacks;
+        uint256 reservedSlots = pendingReservedPacks * CARDS_PER_PACK;
+        if (remainingPool.length <= reservedSlots) return 0;
+        return (remainingPool.length - reservedSlots) / CARDS_PER_PACK;
     }
 
+    /// @notice gives you every VRF request ID that's been created so far
     function allRequestIds() external view returns (uint256[] memory) {
         return _allRequestIds;
     }
 
+    /// @notice look up the basic info for a pack purchase (who bought it, how much)
     function getRequestStatusBasic(uint256 requestId)
         external
         view
@@ -315,6 +338,7 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         );
     }
 
+    /// @notice returns the raw random numbers chainlink gave for a request
     function getRequestRandomWords(uint256 requestId)
         external
         view
@@ -323,6 +347,7 @@ contract DropManagerVRF is VRFConsumerBaseV2Plus, ReentrancyGuard, Pausable {
         return _requestRandomWords[requestId];
     }
 
+    /// @notice returns which card IDs the user actually got from opening their pack
     function getRequestCardIds(uint256 requestId)
         external
         view
