@@ -97,3 +97,8 @@ ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 6. If it shows 5 cards, you have successfully minted
 
 # Step 12: Marketplace
+1. Deployment: Deploy the marketplace contract with the specific ERC1155 and ERC20 contract addresses.
+2. Listing: Seller calls list() to put their cards on the market (cards are transferred to marketplace escrow).
+3. Viewing Listings: Call getListing() to display active items, prices, and available amounts.
+4. Purchase: Buyer calls buy() to execute the trade, automatically handling the transfer of cards, payment, and commission fees.
+5. Unlisting (Optional): If the seller changes their mind before the cards are sold, they can call unlist() to cancel the listing and retrieve their unsold cards from the marketplace escrow.
