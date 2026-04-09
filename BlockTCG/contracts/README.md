@@ -1,6 +1,6 @@
 ## How to test the contracts
 
-# Step 1: ChainLink VRF Sibscription set up
+# Step 1: ChainLink VRF Subscription set up
 Claim Sepolia ETH: https://cloud.google.com/application/web3/faucet/ethereum/sepolia
 Claim LINK Token: https://faucets.chain.link/sepolia
 
