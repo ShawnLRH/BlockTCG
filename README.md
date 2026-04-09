@@ -144,7 +144,7 @@ ids:      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 ## How To View React Frontend
 ### 1. Install Node.js https://nodejs.org/en/download
 ### 2. Install Project Dependencies**
-Run the following commands to install project dependencies in the BlockTCG folder:
+Run the following commands to install project dependencies in the nested BlockTCG folder (BlockTCG/BlockTCG):
 ```
 cd BlockTCG
 npm install
