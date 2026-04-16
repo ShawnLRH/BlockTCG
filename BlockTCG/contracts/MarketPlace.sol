@@ -15,6 +15,7 @@ contract CardMarketplace is ERC1155Holder {
     uint256 public commissionFee; 
 
     struct Listing {
+        uint256 listingId;
         address seller;
         uint256 tokenId;
         uint256 amount;
@@ -37,7 +38,8 @@ contract CardMarketplace is ERC1155Holder {
 
         cardContract.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
 
-        listings[listingCount] = Listing(msg.sender, tokenId, amount, price);
+        uint256 currentId = listingCount;
+        listings[listingCount] = Listing(currentId, msg.sender, tokenId, amount, price);
         listingCount++;
     }
 
@@ -72,5 +74,35 @@ contract CardMarketplace is ERC1155Holder {
     /// @return Listing struct containing seller, tokenId, amount, and price
     function getListing(uint256 listingId) public view returns (Listing memory) {
         return listings[listingId];
+    }
+
+    /// @notice Get all the listings
+    function getAllActiveListings() public view returns (
+        uint256[] memory outListingIds,
+        uint256[] memory outAmounts,
+        uint256[] memory outPrices
+    ) {
+        uint256 activeCount = 0;
+        
+        for (uint256 i = 0; i < listingCount; i++) {
+            if (listings[i].price > 0) {
+                activeCount++;
+            }
+        }
+
+        outListingIds = new uint256[](activeCount);
+        outAmounts = new uint256[](activeCount);
+        outPrices = new uint256[](activeCount);
+
+        uint256 currentIndex = 0;
+
+        for (uint256 i = 0; i < listingCount; i++) {
+            if (listings[i].price > 0) {
+                outListingIds[currentIndex] = listings[i].listingId;
+                outAmounts[currentIndex] = listings[i].amount;
+                outPrices[currentIndex] = listings[i].price;
+                currentIndex++;
+            }
+        }
     }
 }
